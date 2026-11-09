@@ -1,0 +1,4 @@
+import { Link } from "react-router-dom"; import { Film } from "lucide-react"; import { useAuth } from "../context/AuthContext";
+export default function Navbar() { const { user, logout } = useAuth();
+  return (<nav className="sticky top-0 z-50 flex items-center justify-between border-b border-white/10 bg-black/70 px-6 py-3 backdrop-blur"><Link to="/" className="flex items-center gap-2 font-bold"><Film className="text-amber-400" />Cine<span className="text-purple-400">South</span></Link>
+    <div className="flex items-center gap-4 text-sm">{user ? (<>{user.role === "admin" && <Link to="/admin" className="hover:text-amber-300">Admin</Link>}<Link to="/dashboard" className="hover:text-amber-300">{user.name}</Link><button onClick={logout} className="text-white/60 hover:text-white">Logout</button></>) : (<><Link to="/login">Login</Link><Link to="/register" className="btn">Sign up</Link></>)}</div></nav>); }

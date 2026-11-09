@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-black text-white antialiased;
+}
+
+.glass {
+  @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl;
+}
+
+.input {
+  @apply w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-purple-500;
+}
+
+.btn {
+  @apply rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 px-5 py-2 text-sm font-semibold hover:brightness-110 disabled:opacity-50;
+}
+
+/* Movie Poster Styling */
+.movie-poster {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.movie-poster:hover {
+  transform: scale(1.04);
+}

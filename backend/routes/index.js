@@ -1,0 +1,11 @@
+import { Router } from "express"; import { protect, admin } from "../middleware/auth.js"; import * as a from "../controllers/auth.js"; import * as m from "../controllers/movies.js"; import * as d from "../controllers/admin.js";
+const r = Router();
+r.post("/auth/register", a.register); r.post("/auth/login", a.login); r.post("/auth/forgot", a.forgot); r.post("/auth/reset/:token", a.reset);
+r.get("/auth/me", protect, a.me); r.put("/auth/me", protect, a.updateMe);
+r.get("/movies", m.list); r.get("/movies/:id", m.one); r.get("/movies/:id/reviews", m.reviews);
+r.post("/movies/:id/reviews", protect, m.rate); r.post("/movies/:id/watchlist", protect, m.toggleWatch);
+r.delete("/reviews/:id", protect, m.delReview); r.post("/reviews/:id/like", protect, m.like);
+r.get("/me/watchlist", protect, m.myWatch); r.get("/me/reviews", protect, m.myReviews);
+r.post("/movies", protect, admin, m.create); r.put("/movies/:id", protect, admin, m.update); r.delete("/movies/:id", protect, admin, m.remove);
+r.get("/admin/stats", protect, admin, d.stats); r.get("/admin/users", protect, admin, d.users); r.put("/admin/users/:id", protect, admin, d.setRole); r.delete("/admin/users/:id", protect, admin, d.delUser); r.get("/admin/reviews", protect, admin, d.allReviews);
+export default r;

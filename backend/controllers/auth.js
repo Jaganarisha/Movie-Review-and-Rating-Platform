@@ -1,0 +1,12 @@
+import jwt from "jsonwebtoken"; import crypto from "crypto"; import User from "../models/User.js"; import { h, fail } from "../utils/h.js";
+const sign = (u) => ({ token: jwt.sign({ id: u._id }, process.env.JWT_SECRET, { expiresIn: "7d" }), user: { _id: u._id, name: u.name, email: u.email, role: u.role, profileImage: u.profileImage } });
+export const register = h(async (req, res) => { const { name, email, password } = req.body; if (!name || !email || !password || password.length < 6) throw fail(400, "Name, valid email and 6+ char password required");
+  if (await User.findOne({ email })) throw fail(409, "Email already registered"); res.status(201).json(sign(await User.create({ name, email, password }))); });
+export const login = h(async (req, res) => { const u = await User.findOne({ email: String(req.body.email || "").toLowerCase() }).select("+password"); if (!u || !(await u.matches(req.body.password || ""))) throw fail(401, "Invalid email or password"); res.json(sign(u)); });
+export const me = h(async (req, res) => res.json(req.user));
+export const updateMe = h(async (req, res) => { const { name, profileImage, password } = req.body; if (name) req.user.name = name; if (profileImage !== undefined) req.user.profileImage = profileImage; if (password) { if (password.length < 6) throw fail(400, "Password too short"); req.user.password = password; } await req.user.save(); res.json(req.user); });
+export const forgot = h(async (req, res) => { const u = await User.findOne({ email: String(req.body.email || "").toLowerCase() }); const out = { message: "If that email exists, a reset link was created" };
+  if (u) { const raw = crypto.randomBytes(24).toString("hex"); u.resetToken = crypto.createHash("sha256").update(raw).digest("hex"); u.resetExpires = Date.now() + 3600000; await u.save({ validateBeforeSave: false });
+    const link = `${(process.env.CLIENT_URL || "").split(",")[0]}/reset/${raw}`; console.log("Password reset link:", link); if (process.env.NODE_ENV !== "production") out.devResetLink = link; } res.json(out); });
+export const reset = h(async (req, res) => { const t = crypto.createHash("sha256").update(req.params.token).digest("hex"); const u = await User.findOne({ resetToken: t, resetExpires: { $gt: Date.now() } }).select("+resetToken +resetExpires");
+  if (!u || !req.body.password || req.body.password.length < 6) throw fail(400, "Invalid or expired link"); u.password = req.body.password; u.resetToken = u.resetExpires = undefined; await u.save(); res.json({ message: "Password updated" }); });
